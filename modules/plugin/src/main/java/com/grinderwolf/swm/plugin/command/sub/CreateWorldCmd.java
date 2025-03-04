@@ -10,6 +10,7 @@ import com.grinderwolf.swm.plugin.command.CommandManager;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
 import com.grinderwolf.swm.plugin.config.WorldsConfig;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
@@ -92,7 +93,7 @@ public class CreateWorldCmd implements Subcommand {
                     if (!(sender instanceof ConsoleCommandSender))
                         sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to create world " + worldName + ". Take a look at the server console for more information.");
 
-                    SWMPlugin.logger().error("Failed to generate world '{}'!", worldName, ex);
+                    Logging.error("Failed to generate world '%s'!".formatted(worldName), ex);
                 } finally {
                     CommandManager.getInstance().getWorldsInUse().remove(worldName);
                 }

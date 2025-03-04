@@ -1,8 +1,8 @@
 package com.grinderwolf.swm.plugin.command.sub;
 
 
-import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -27,7 +27,7 @@ public class ReloadConfigCmd implements Subcommand {
             if (!(sender instanceof ConsoleCommandSender))
                 sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to reload the config file. Take a look at the server console for more information.");
 
-            SWMPlugin.logger().error("Failed to load config files!", ex);
+            Logging.error("Failed to load config files!", ex);
             return true;
         }
 

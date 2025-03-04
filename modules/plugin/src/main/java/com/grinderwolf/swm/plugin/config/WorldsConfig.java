@@ -1,6 +1,6 @@
 package com.grinderwolf.swm.plugin.config;
 
-import com.grinderwolf.swm.plugin.SWMPlugin;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Setting;
@@ -20,7 +20,7 @@ public class WorldsConfig {
         try {
             ConfigManager.getWorldConfigLoader().save(ConfigManager.getWorldConfigLoader().createNode().set(WorldsConfig.class, this));
         } catch (IOException ex) {
-            SWMPlugin.logger().error("Failed to save worlds config!", ex);
+            Logging.error("Failed to save worlds config!", ex);
         }
     }
 

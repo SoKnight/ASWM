@@ -10,6 +10,7 @@ import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
 import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -100,7 +101,7 @@ public class DeleteWorldCmd implements Subcommand {
                             if (!(sender instanceof ConsoleCommandSender))
                                 sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to delete world " + worldName + ". Take a look at the server console for more information.");
 
-                            SWMPlugin.logger().error("Failed to delete world '{}'!", worldName, ex);
+                            Logging.error("Failed to delete world '%s'!".formatted(worldName), ex);
                         } catch (UnknownWorldException ex) {
                             sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Data source " + source + " does not contain any world called " + worldName + ".");
                         } finally {

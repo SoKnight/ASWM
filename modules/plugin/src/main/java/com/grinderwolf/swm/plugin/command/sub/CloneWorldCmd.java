@@ -10,6 +10,7 @@ import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
 import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -93,7 +94,7 @@ public class CloneWorldCmd implements Subcommand {
                     if (!(sender instanceof ConsoleCommandSender))
                         sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to load world " + templateWorldName + ": world seems to be corrupted.");
 
-                    SWMPlugin.logger().error("Failed to load world '{}': world seems to be corrupted.", templateWorldName, ex);
+                    Logging.error("Failed to load world '%s': world seems to be corrupted.".formatted(templateWorldName), ex);
                 } catch (NewerFormatException ex) {
                     sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to load world " + templateWorldName + ": this world was serialized with a newer version of the Slime Format (" + ex.getMessage() + ") that SWM cannot understand.");
                 } catch (UnknownWorldException ex) {
@@ -104,7 +105,7 @@ public class CloneWorldCmd implements Subcommand {
                     if (!(sender instanceof ConsoleCommandSender))
                         sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to load world " + templateWorldName + ". Take a look at the server console for more information.");
 
-                    SWMPlugin.logger().error("Failed to load world '{}'!", templateWorldName, ex);
+                    Logging.error("Failed to load world '%s'!".formatted(templateWorldName), ex);
                 } catch (WorldInUseException ignored) { } finally {
                     CommandManager.getInstance().getWorldsInUse().remove(worldName);
                 }

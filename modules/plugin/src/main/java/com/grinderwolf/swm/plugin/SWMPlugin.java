@@ -16,6 +16,7 @@ import com.grinderwolf.swm.plugin.config.WorldData;
 import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.converter.WorldConverterService;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import com.grinderwolf.swm.plugin.world.WorldUnlocker;
 import com.grinderwolf.swm.plugin.world.importer.WorldImporter;
 import lombok.Getter;
@@ -23,18 +24,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
     private static SWMPlugin INSTANCE;
-    private static Logger LOGGER;
 
     @Getter
     private final SlimeNMS platform;
@@ -48,12 +47,10 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
     @Override
     public void onLoad() {
-        LOGGER = LoggerFactory.getLogger(getLogger().getName());
-
         try {
             ConfigManager.initialize();
         } catch (NullPointerException | IOException ex) {
-            getSLF4JLogger().error("Failed to load config files!", ex);
+            Logging.error("Failed to load config files!", ex);
             return;
         }
 
@@ -68,13 +65,13 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             String defaultWorldName = props.getProperty("level-name");
 
             if (erroredWorlds.contains(defaultWorldName)) {
-                getSLF4JLogger().error("Shutting down server, as the default world could not be loaded.");
+                Logging.error("Shutting down server, as the default world could not be loaded.");
                 System.exit(1);
             } else if (getServer().getAllowNether() && erroredWorlds.contains(defaultWorldName + "_nether")) {
-                getSLF4JLogger().error("Shutting down server, as the default nether world could not be loaded.");
+                Logging.error("Shutting down server, as the default nether world could not be loaded.");
                 System.exit(1);
             } else if (getServer().getAllowEnd() && erroredWorlds.contains(defaultWorldName + "_the_end")) {
-                getSLF4JLogger().error("Shutting down server, as the default end world could not be loaded.");
+                Logging.error("Shutting down server, as the default end world could not be loaded.");
                 System.exit(1);
             }
 
@@ -84,7 +81,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
 
             platform.setDefaultWorlds(defaultWorld, netherWorld, endWorld);
         } catch (IOException ex) {
-            getSLF4JLogger().error("Failed to retrieve default world name!", ex);
+            Logging.error("Failed to retrieve default world name!", ex);
         }
     }
 
@@ -127,19 +124,19 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
                     SlimeWorld world = loadWorld(loader, worldName, worldData.isReadOnly(), propertyMap);
                     worlds.add(world);
                 } catch (UnknownWorldException ex) {
-                    getSLF4JLogger().error("Failed to load world '{}': world does not exist, are you sure you've set the correct data source?", worldName);
+                    Logging.error("Failed to load world '%s': world does not exist, are you sure you've set the correct data source?", worldName);
                     erroredWorlds.add(worldName);
                 } catch (NewerFormatException ex) {
-                    getSLF4JLogger().error("Failed to load world '{}': world is serialized in a newer Slime Format version ({}) that SWM does not understand.", worldName, ex.getMessage());
+                    Logging.error("Failed to load world '%s': world is serialized in a newer Slime Format version (%s) that SWM does not understand.", worldName, ex.getMessage());
                     erroredWorlds.add(worldName);
                 } catch (WorldInUseException ex) {
-                    getSLF4JLogger().error("Failed to load world '{}': world is in use! If you think this is a mistake, please wait some time and try again.", worldName);
+                    Logging.error("Failed to load world '%s': world is in use! If you think this is a mistake, please wait some time and try again.", worldName);
                     erroredWorlds.add(worldName);
                 } catch (CorruptedWorldException ex) {
-                    getSLF4JLogger().error("Failed to load world '{}': world seems to be corrupted.", worldName);
+                    Logging.error("Failed to load world '%s': world seems to be corrupted.", worldName);
                     erroredWorlds.add(worldName);
                 } catch (Exception ex) {
-                    getSLF4JLogger().error("Failed to load world '{}'!", worldName, ex);
+                    Logging.error("Failed to load world '%s'!".formatted(worldName), ex);
                     erroredWorlds.add(worldName);
                 }
             }
@@ -160,7 +157,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         Objects.requireNonNull(worldName, "World name cannot be null");
         Objects.requireNonNull(propertyMap, "Properties cannot be null");
 
-        getSLF4JLogger().info("Loading world '{}'...", worldName);
+        Logging.info("Loading world '%s'...", worldName);
         long start = System.currentTimeMillis();
         byte[] serializedWorld = loader.loadWorld(worldName, readOnly);
         CraftSlimeWorld world;
@@ -180,7 +177,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         }
 
         long timeTaken = System.currentTimeMillis() - start;
-        getSLF4JLogger().info("World '{}' loaded in {} ms.", worldName, timeTaken);
+        Logging.info("World '%s' loaded in %d ms.", worldName, timeTaken);
         return world;
     }
 
@@ -198,7 +195,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         if (loader.worldExists(worldName))
             throw new WorldAlreadyExistsException(worldName);
 
-        getSLF4JLogger().info("Creating empty world '{}'.", worldName);
+        Logging.info("Creating empty world '%s'...", worldName);
         long start = System.currentTimeMillis();
 
         CraftSlimeWorld world = new CraftSlimeWorld(
@@ -216,7 +213,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         loader.saveWorld(worldName, world.serialize(), !readOnly);
 
         long timeTaken = System.currentTimeMillis() - start;
-        getSLF4JLogger().info("World '{}' created in {} ms.", worldName, timeTaken);
+        Logging.info("World '%s' created in %d ms.", worldName, timeTaken);
         return world;
     }
 
@@ -308,7 +305,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
     }
 
     public static Logger logger() {
-        return LOGGER;
+        return getInstance().getLogger();
     }
 
     public static SWMPlugin getInstance() {

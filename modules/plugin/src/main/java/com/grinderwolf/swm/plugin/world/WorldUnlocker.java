@@ -3,6 +3,7 @@ package com.grinderwolf.swm.plugin.world;
 import com.grinderwolf.swm.api.exception.UnknownWorldException;
 import com.grinderwolf.swm.api.world.SlimeWorld;
 import com.grinderwolf.swm.plugin.SWMPlugin;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,7 +26,7 @@ public class WorldUnlocker implements Listener {
         try {
             world.getLoader().unlockWorld(world.getName());
         } catch (IOException ex) {
-            SWMPlugin.logger().error("Failed to unlock world '{}'! Retrying in 5 seconds...", world.getName(), ex);
+            Logging.error("Failed to unlock world '%s'! Retrying in 5 seconds...".formatted(world.getName()), ex);
             Bukkit.getScheduler().runTaskLaterAsynchronously(SWMPlugin.getInstance(), () -> unlockWorld(world), 100);
         } catch (UnknownWorldException ignored) {
         }

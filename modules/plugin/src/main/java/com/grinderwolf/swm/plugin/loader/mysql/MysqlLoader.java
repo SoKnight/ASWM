@@ -3,10 +3,10 @@ package com.grinderwolf.swm.plugin.loader.mysql;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.grinderwolf.swm.api.exception.UnknownWorldException;
 import com.grinderwolf.swm.api.exception.WorldInUseException;
-import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.config.DatasourcesConfig;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
 import com.grinderwolf.swm.plugin.loader.UpdatableLoader;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -107,10 +107,10 @@ public class MysqlLoader extends UpdatableLoader {
                 throw new NewerDatabaseException(CURRENT_DB_VERSION, version);
 
             if (version < CURRENT_DB_VERSION) {
-                SWMPlugin.logger().warn("Your SWM MySQL database is outdated. The update process will start in 10 seconds.");
-                SWMPlugin.logger().warn("Note that this update might make your database incompatible with older SWM versions.");
-                SWMPlugin.logger().warn("Make sure no other servers with older SWM versions are using this database.");
-                SWMPlugin.logger().warn("Shut down the server to prevent your database from being updated.");
+                Logging.warn("Your SWM MySQL database is outdated. The update process will start in 10 seconds.");
+                Logging.warn("Note that this update might make your database incompatible with older SWM versions.");
+                Logging.warn("Make sure no other servers with older SWM versions are using this database.");
+                Logging.warn("Shut down the server to prevent your database from being updated.");
 
                 try {
                     Thread.sleep(10000L);
@@ -167,7 +167,7 @@ public class MysqlLoader extends UpdatableLoader {
             statement.setString(2, worldName);
             statement.executeUpdate();
         } catch (SQLException ex) {
-            SWMPlugin.logger().error("Failed to update lock for world '{}'!", worldName, ex);
+            Logging.error("Failed to update lock for world '%s'!".formatted(worldName), ex);
         }
 
         if (forceSchedule || lockedWorlds.containsKey(worldName)) { // Only schedule another update if the world is still on the map

@@ -10,6 +10,7 @@ import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
 import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -80,7 +81,7 @@ public class MigrateWorldCmd implements Subcommand {
                     if (!(sender instanceof ConsoleCommandSender))
                         sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to migrate world " + worldName + " (using data sources " + currentSource + " and " + newSource + "). Take a look at the server console for more information.");
 
-                    SWMPlugin.logger().error("Failed to load world '{}', using data source '{}'!", worldName, currentSource, ex);
+                    Logging.error("Failed to load world '%s', using data source '%s'!".formatted(worldName, currentSource), ex);
                 } catch (WorldInUseException ex) {
                     sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "World " + worldName + " is being used on another server.");
                 } catch (WorldAlreadyExistsException ex) {

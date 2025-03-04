@@ -9,6 +9,7 @@ import com.grinderwolf.swm.api.exception.WorldTooBigException;
 import com.grinderwolf.swm.api.loader.SlimeLoader;
 import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -76,7 +77,7 @@ public class ImportWorldCmd implements Subcommand {
                             if (!(sender instanceof ConsoleCommandSender))
                                 sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to import world " + worldName + ". Take a look at the server console for more information.");
 
-                            SWMPlugin.logger().error("Failed to import world '{}'!", worldName, ex);
+                            Logging.error("Failed to import world '%s'!".formatted(worldName), ex);
                         }
 
                     });

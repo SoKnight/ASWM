@@ -7,6 +7,7 @@ import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.config.DatasourcesConfig;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
 import com.grinderwolf.swm.plugin.loader.UpdatableLoader;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import com.mongodb.MongoException;
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.*;
@@ -71,7 +72,7 @@ public class MongoLoader extends UpdatableLoader {
                 mongoDatabase.getCollection(collection + "_files.chunks").renameCollection(new MongoNamespace(database, collection + ".chunks"));
 
                 long timeTaken = System.currentTimeMillis() - startTime;
-                SWMPlugin.logger().info("MongoDB database updated in {} ms.", timeTaken);
+                Logging.info("MongoDB database updated in %d ms.", timeTaken);
                 break;
             }
         }
@@ -84,10 +85,10 @@ public class MongoLoader extends UpdatableLoader {
                 Filters.eq("locked", false)
         )).cursor()) {
             if (documents.hasNext()) {
-                SWMPlugin.logger().warn("Your SWM MongoDB database is outdated. The update process will start in 10 seconds.");
-                SWMPlugin.logger().warn("Note that this update will make your database incompatible with older SWM versions.");
-                SWMPlugin.logger().warn("Make sure no other servers with older SWM versions are using this database.");
-                SWMPlugin.logger().warn("Shut down the server to prevent your database from being updated.");
+                Logging.warn("Your SWM MongoDB database is outdated. The update process will start in 10 seconds.");
+                Logging.warn("Note that this update will make your database incompatible with older SWM versions.");
+                Logging.warn("Make sure no other servers with older SWM versions are using this database.");
+                Logging.warn("Shut down the server to prevent your database from being updated.");
 
                 try {
                     Thread.sleep(10000L);
@@ -135,7 +136,7 @@ public class MongoLoader extends UpdatableLoader {
             MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
             mongoCollection.updateOne(Filters.eq("name", worldName), Updates.set("locked", System.currentTimeMillis()));
         } catch (MongoException ex) {
-            SWMPlugin.logger().error("Failed to update lock for world '{}'!", worldName, ex);
+            Logging.error("Failed to update lock for world '%s'!".formatted(worldName), ex);
         }
 
         if (forceSchedule || lockedWorlds.containsKey(worldName)) { // Only schedule another update if the world is still on the map

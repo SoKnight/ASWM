@@ -14,12 +14,12 @@ import com.grinderwolf.swm.api.world.properties.SlimePropertyMap;
 import com.grinderwolf.swm.nms.CraftSlimeChunk;
 import com.grinderwolf.swm.nms.CraftSlimeChunkSection;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
-import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.DatasourcesConfig;
 import com.grinderwolf.swm.plugin.loader.file.FileLoader;
 import com.grinderwolf.swm.plugin.loader.mongo.MongoLoader;
 import com.grinderwolf.swm.plugin.loader.mysql.MysqlLoader;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import com.mongodb.MongoException;
 
 import java.io.ByteArrayInputStream;
@@ -47,7 +47,7 @@ public class LoaderUtils {
         try {
             registerLoader("file", new FileLoader(Paths.get(fileConfig.getPath())));
         } catch (IOException ex) {
-            SWMPlugin.logger().error("Failed to initialize file loader in '{}'!", fileConfig.getPath(), ex);
+            Logging.error("Failed to initialize file loader in '%s'!".formatted(fileConfig.getPath()), ex);
         }
 
         // Mysql loader
@@ -56,7 +56,7 @@ public class LoaderUtils {
             try {
                 registerLoader("mysql", new MysqlLoader(mysqlConfig));
             } catch (SQLException ex) {
-                SWMPlugin.logger().error("Failed to establish connection to the MySQL server!", ex);
+                Logging.error("Failed to establish connection to the MySQL server!", ex);
             }
         }
 
@@ -66,7 +66,7 @@ public class LoaderUtils {
             try {
                 registerLoader("mongodb", new MongoLoader(mongoConfig));
             } catch (MongoException ex) {
-                SWMPlugin.logger().error("Failed to establish connection to the MongoDB server!", ex);
+                Logging.error("Failed to establish connection to the MongoDB server!", ex);
             }
         }
     }
@@ -87,13 +87,13 @@ public class LoaderUtils {
             try {
                 ((UpdatableLoader) loader).update();
             } catch (UpdatableLoader.NewerDatabaseException ex) {
-                SWMPlugin.logger().error(
-                        "Data source '{}' version is {}, while this SWM version only supports up to version {}!",
+                Logging.error(
+                        "Data source '%s' version is %d, while this SWM version only supports up to version %d!",
                         dataSource, ex.getDatabaseVersion(), ex.getCurrentVersion()
                 );
                 return;
             } catch (IOException ex) {
-                SWMPlugin.logger().error("Failed to check if data source '{}' is updated!", dataSource, ex);
+                Logging.error("Failed to check if data source '%s' is updated!".formatted(dataSource), ex);
                 return;
             }
         }

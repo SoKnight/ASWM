@@ -2,7 +2,7 @@ package com.grinderwolf.swm.plugin.loader.file;
 
 import com.grinderwolf.swm.api.exception.UnknownWorldException;
 import com.grinderwolf.swm.api.loader.SlimeLoader;
-import lombok.extern.slf4j.Slf4j;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import org.apache.commons.io.FileUtils;
 
 import java.io.FileNotFoundException;
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-@Slf4j
 public class FileLoader implements SlimeLoader {
 
     private static final FilenameFilter WORLD_FILE_FILTER = (dir, name) -> name.endsWith(".slime");
@@ -31,8 +30,8 @@ public class FileLoader implements SlimeLoader {
     public FileLoader(Path worldDir) throws IOException {
         this.worldDir = worldDir;
 
-        if (Files.deleteIfExists(worldDir))
-            log.warn("A file named '{}' has been deleted, as this is the name used for the worlds directory.", worldDir);
+        if (Files.isRegularFile(worldDir) && Files.deleteIfExists(worldDir))
+            Logging.warn("A file named '%s' has been deleted, as this is the name used for the worlds directory.", worldDir);
 
         if (!Files.isDirectory(worldDir)) {
             Files.createDirectories(worldDir);
@@ -53,7 +52,7 @@ public class FileLoader implements SlimeLoader {
         });
 
         if (!readOnly && file != null && file.getChannel().isOpen())
-            log.debug("World is unlocked");
+            Logging.info("World is unlocked.");
 
         if (file != null && file.length() > Integer.MAX_VALUE)
             throw new IndexOutOfBoundsException("World is too big!");
@@ -147,13 +146,13 @@ public class FileLoader implements SlimeLoader {
         } else {
             try {
                 RandomAccessFile worldFile = worldFiles.get(worldName);
-                log.debug("Deleting world '{}'...", worldName);
+                Logging.info("Deleting world '%s'...", worldName);
                 RandomAccessFile randomAccessFile = worldFiles.get(worldName);
                 unlockWorld(worldName);
                 FileUtils.forceDelete(worldDir.resolve(worldName + ".slime").toFile());
 
                 if (randomAccessFile != null) {
-                    log.debug("Attempting to delete worldData '{}'...", worldName);
+                    Logging.info("Attempting to delete worldData '%s'...", worldName);
                     worldFile.seek(0); // Make sure we're at the start of the file
                     worldFile.setLength(0); // Delete old data
                     worldFile.write(null);
@@ -161,9 +160,9 @@ public class FileLoader implements SlimeLoader {
                     worldFiles.remove(worldName);
                 }
 
-                log.info("World '{}' deleted.", worldName);
+                Logging.info("World '%s' deleted.", worldName);
             } catch (IOException ex) {
-                log.error("Failed to delete world '{}'!", worldName, ex);
+                Logging.error("Failed to delete world '%s'!".formatted(worldName), ex);
             }
         }
     }

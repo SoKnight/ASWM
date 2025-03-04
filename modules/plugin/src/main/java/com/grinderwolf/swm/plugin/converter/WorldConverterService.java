@@ -4,6 +4,7 @@ import com.grinderwolf.swm.nms.CraftSlimeWorld;
 import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.converter.spec.NetherUpdateWorldConverter;
 import com.grinderwolf.swm.plugin.converter.spec.VillageAndPillageWorldConverter;
+import com.grinderwolf.swm.plugin.logging.Logging;
 
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class WorldConverterService {
         for (byte version = (byte) (world.getVersion() + 1); version <= serverVersion; version++) {
             WorldConverter upgrade = CONVERTERS.get(version);
             if (upgrade == null) {
-                SWMPlugin.logger().warn("Missing world upgrader for version {}. World will not be upgraded.", version);
+                Logging.warn("Missing world converter for version '%s': world will not be upgraded.", version);
                 continue;
             }
 
@@ -35,7 +36,7 @@ public class WorldConverterService {
         for (byte version = world.getVersion(); version > serverVersion; version--) {
             WorldConverter upgrade = CONVERTERS.get(version);
             if (upgrade == null) {
-                SWMPlugin.logger().warn("Missing world upgrader for version {}. World will not be downgraded.", version);
+                Logging.warn("Missing world converter for version '%s': world will not be downgraded.", version);
                 continue;
             }
 

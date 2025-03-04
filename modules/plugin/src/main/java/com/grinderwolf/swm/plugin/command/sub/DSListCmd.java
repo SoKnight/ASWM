@@ -4,6 +4,7 @@ import com.grinderwolf.swm.api.loader.SlimeLoader;
 import com.grinderwolf.swm.api.world.SlimeWorld;
 import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -63,7 +64,7 @@ public class DSListCmd implements Subcommand {
                         sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to load world list. Take a look at the server console for more information.");
                     }
 
-                    SWMPlugin.logger().error("Failed to load world list!", ex);
+                    Logging.error("Failed to load world list!", ex);
                     return;
                 }
 

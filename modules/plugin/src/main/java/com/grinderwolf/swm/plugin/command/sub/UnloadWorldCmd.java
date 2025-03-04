@@ -2,11 +2,11 @@ package com.grinderwolf.swm.plugin.command.sub;
 
 import com.grinderwolf.swm.api.exception.UnknownWorldException;
 import com.grinderwolf.swm.api.loader.SlimeLoader;
-import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
 import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
+import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
@@ -73,16 +73,16 @@ public class UnloadWorldCmd implements Subcommand {
             }
 
             if (Bukkit.unloadWorld(world, true)) {
-                SWMPlugin.logger().debug("Attempting to unload world '{}'...", worldName);
+                Logging.info("Attempting to unload world '%s'...", worldName);
 
                 try {
                     if (loader.isWorldLocked(worldName)) {
-                        SWMPlugin.logger().debug("World '{}' is locked.", worldName);
+                        Logging.info("World '%s' is locked.", worldName);
                         loader.unlockWorld(worldName);
-                        SWMPlugin.logger().info("Attempted to unlock world '{}'.", worldName);
+                        Logging.info("Attempted to unlock world '%s'.", worldName);
                     }
                 } catch (UnknownWorldException | IOException ex) {
-                    SWMPlugin.logger().error("Failed to unload world '{}'!", worldName, ex);
+                    Logging.error("Failed to unload world '%s'!".formatted(worldName), ex);
                 }
 
                 sender.sendMessage(COMMAND_PREFIX + ChatColor.GREEN + "World " + ChatColor.YELLOW + worldName + ChatColor.GREEN + " unloaded correctly.");
