@@ -1,0 +1,38 @@
+[versions]
+# common libraries
+chalk = "1.0.2"
+commonsIo = "2.18.0"
+configurateYaml = "4.2.0"
+flowNbt = "2.0.0"
+javaAssist = "3.30.2-GA"
+lombok = "1.18.36"
+snakeYaml = "1.27"          # bundled in Paper 1.16.5
+zstdJni = "1.5.7-1"
+
+# database drivers & I/O
+hikariCP = "6.2.1"
+mysqlDriver = "8.0.23"      # bundled in Paper 1.16.5
+mongoDriver = "3.12.14"
+
+# server software
+paper = "1.16.5-R0.1-SNAPSHOT"
+
+[libraries]
+# common libraries
+chalk = { module = "com.github.tomas-langer:chalk", version.ref = "chalk" }
+commonsIo = { module = "commons-io:commons-io", version.ref = "commonsIo" }
+configurateYaml = { module = "org.spongepowered:configurate-yaml", version.ref = "configurateYaml" }
+flowNbt = { module = "com.flowpowered:flow-nbt", version.ref = "flowNbt" }
+javaAssist = { module = "org.javassist:javassist", version.ref = "javaAssist" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+snakeYaml = { module = "org.yaml:snakeyaml", version.ref = "snakeYaml" }
+zstdJni = { module = "com.github.luben:zstd-jni", version.ref = "zstdJni" }
+
+# database drivers & I/O
+hikariCP = { module = "com.zaxxer:HikariCP", version.ref = "hikariCP" }
+mysqlDriver = { module = "mysql:mysql-connector-java", version.ref = "mysqlDriver" }
+mongoDriver = { module = "org.mongodb:mongo-java-driver", version.ref = "mongoDriver" }
+
+# server software
+paper = { module = "com.destroystokyo.paper:paper", version.ref = "paper" }
+paperApi = { module = "com.destroystokyo.paper:paper-api", version.ref = "paper" }
