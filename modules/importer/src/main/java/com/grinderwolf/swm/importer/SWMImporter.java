@@ -45,7 +45,7 @@ public class SWMImporter {
             return;
         }
 
-        Path worldDir = Paths.get(args[0]);
+        Path worldDir = Paths.get(args[0]).toAbsolutePath();
         Path outputFile = getDestinationFile(worldDir);
 
         List<String> argList = Arrays.asList(args);
