@@ -7,12 +7,19 @@ import com.grinderwolf.swm.api.exception.WorldAlreadyExistsException;
 import com.grinderwolf.swm.api.exception.WorldLoadedException;
 import com.grinderwolf.swm.api.exception.WorldTooBigException;
 import com.grinderwolf.swm.api.loader.SlimeLoader;
+import com.grinderwolf.swm.api.world.SlimeWorld;
+import com.grinderwolf.swm.api.world.properties.SlimePropertyMap;
 import com.grinderwolf.swm.plugin.SWMPlugin;
+import com.grinderwolf.swm.plugin.config.ConfigManager;
+import com.grinderwolf.swm.plugin.config.WorldData;
+import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.loader.LoaderUtils;
 import com.grinderwolf.swm.plugin.logging.Logging;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 
@@ -39,7 +46,6 @@ public class ImportWorldCmd implements Subcommand {
         if (args.length > 1) {
             String dataSource = args[1];
             SlimeLoader loader = LoaderUtils.getLoader(dataSource);
-
             if (loader == null) {
                 sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Data source " + dataSource + " does not exist.");
                 return true;
@@ -51,20 +57,51 @@ public class ImportWorldCmd implements Subcommand {
                 return true;
             }
 
+            String worldDirName = worldDir.getFileName().toString();
+            String worldName = (args.length > 2 ? args[2] : worldDirName);
+
+            WorldsConfig config = ConfigManager.getWorldConfig();
+            if (config.getWorlds().containsKey(worldName)) {
+                sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "There is already a world called " + worldName + " inside the worlds config file.");
+                return true;
+            }
+
             String[] oldArgs = importCache.getIfPresent(sender.getName());
             if (oldArgs != null) {
                 importCache.invalidate(sender.getName());
 
                 if (Arrays.equals(args, oldArgs)) { // Make sure it's exactly the same command
-                    String worldDirName = worldDir.getFileName().toString();
-                    String worldName = (args.length > 2 ? args[2] : worldDirName);
                     sender.sendMessage(COMMAND_PREFIX + "Importing world " + worldDirName + " into data source " + dataSource + "...");
 
                     Bukkit.getScheduler().runTaskAsynchronously(SWMPlugin.getInstance(), () -> {
                         try {
                             long start = System.currentTimeMillis();
-                            SWMPlugin.getInstance().importWorld(worldDir, worldName, loader);
-                            sender.sendMessage(COMMAND_PREFIX +  ChatColor.GREEN + "World " + ChatColor.YELLOW + worldName + ChatColor.GREEN + " imported " + "successfully in " + (System.currentTimeMillis() - start) + "ms. Remember to add it to the worlds config file before loading it.");
+
+                            WorldData worldData = new WorldData();
+                            worldData.setSpawn("0.5, 64, 0.5");
+                            worldData.setDataSource(dataSource);
+
+                            SlimePropertyMap propertyMap = worldData.toPropertyMap();
+                            SlimeWorld slimeWorld = SWMPlugin.getInstance().importWorld(worldDir, worldName, loader);
+                            slimeWorld.getPropertyMap().merge(propertyMap);
+
+                            Bukkit.getScheduler().runTask(SWMPlugin.getInstance(), () -> {
+                                try {
+                                    SWMPlugin.getInstance().generateWorld(slimeWorld);
+
+                                    // Bedrock block
+                                    Location location = new Location(Bukkit.getWorld(worldName), 0, 61, 0);
+                                    location.getBlock().setType(Material.BEDROCK);
+
+                                    // Config
+                                    config.getWorlds().put(worldName, worldData);
+                                    config.save();
+
+                                    sender.sendMessage(COMMAND_PREFIX + ChatColor.GREEN + "World " + ChatColor.YELLOW + worldName + ChatColor.GREEN + " imported successfully in " + (System.currentTimeMillis() - start) + "ms. This world has been added to the worlds config file automatically.");
+                                } catch (IllegalArgumentException ex) {
+                                    sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to import world " + worldName + ": " + ex.getMessage() + ".");
+                                }
+                            });
                         } catch (WorldAlreadyExistsException ex) {
                             sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Data source " + dataSource + " already contains a world called " + worldName + ".");
                         } catch (InvalidWorldException ex) {

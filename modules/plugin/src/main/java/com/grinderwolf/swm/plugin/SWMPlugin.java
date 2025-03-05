@@ -357,7 +357,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin, Listener {
     }
 
     @Override
-    public CompletableFuture<Void> migrateWorldAsync(String worldName, SlimeLoader currentLoader, SlimeLoader newLoader) {
+    public CompletableFuture<?> migrateWorldAsync(String worldName, SlimeLoader currentLoader, SlimeLoader newLoader) {
         return CompletableFuture.runAsync(() -> {
             try {
                 var preEvent = new AsyncPreMigrateWorldEvent(worldName, currentLoader, newLoader);
@@ -374,8 +374,10 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin, Listener {
         });
     }
 
+    // TODO #importAndLoadWorld(...) (OR refactor whole API)
+
     @Override
-    public void importWorld(
+    public SlimeWorld importWorld(
             Path worldDir,
             String worldName,
             SlimeLoader loader
@@ -402,20 +404,23 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin, Listener {
         }
 
         loader.saveWorld(worldName, serializedWorld, false);
+        world.setLoader(loader);
+        return world;
     }
 
     @Override
-    public CompletableFuture<?> importWorldAsync(Path worldDir, String worldName, SlimeLoader slimeLoader) {
-        return CompletableFuture.runAsync(() -> {
+    public CompletableFuture<SlimeWorld> importWorldAsync(Path worldDir, String worldName, SlimeLoader slimeLoader) {
+        return CompletableFuture.supplyAsync(() -> {
             try {
                 var preEvent = new AsyncPreImportWorldEvent(worldDir, worldName, slimeLoader);
                 Bukkit.getPluginManager().callEvent(preEvent);
                 if (preEvent.isCancelled())
-                    return;
+                    return null;
 
-                importWorld(preEvent.getWorldDir(), preEvent.getWorldName(), preEvent.getSlimeLoader());
+                SlimeWorld world = importWorld(preEvent.getWorldDir(), preEvent.getWorldName(), preEvent.getSlimeLoader());
                 var postEvent = new AsyncPostImportWorldEvent(preEvent.getWorldDir(), preEvent.getWorldName(), preEvent.getSlimeLoader());
                 Bukkit.getPluginManager().callEvent(postEvent);
+                return world;
             } catch (WorldAlreadyExistsException | InvalidWorldException | WorldLoadedException | WorldTooBigException | IOException ex) {
                 throw new IllegalStateException(ex);
             }

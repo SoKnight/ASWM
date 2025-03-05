@@ -126,13 +126,13 @@ public interface SlimePlugin {
      * @throws WorldTooBigException if the world is too big to be imported into the SRF.
      * @throws IOException if the world could not be read or stored.
      */
-    void importWorld(
+    SlimeWorld importWorld(
             Path worldDir,
             String worldName,
             SlimeLoader loader
     ) throws WorldAlreadyExistsException, InvalidWorldException, WorldLoadedException, WorldTooBigException, IOException;
 
-    CompletableFuture<?> importWorldAsync(Path worldDir, String worldName, SlimeLoader loader);
+    CompletableFuture<SlimeWorld> importWorldAsync(Path worldDir, String worldName, SlimeLoader loader);
 
     /**
      * Returns the {@link SlimeLoader} that is able to
