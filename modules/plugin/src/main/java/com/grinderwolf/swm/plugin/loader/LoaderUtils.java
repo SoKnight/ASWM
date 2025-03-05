@@ -19,8 +19,10 @@ import com.grinderwolf.swm.plugin.config.DatasourcesConfig;
 import com.grinderwolf.swm.plugin.loader.file.FileLoader;
 import com.grinderwolf.swm.plugin.loader.mongo.MongoLoader;
 import com.grinderwolf.swm.plugin.loader.mysql.MysqlLoader;
+import com.grinderwolf.swm.plugin.loader.redis.RedisLoader;
 import com.grinderwolf.swm.plugin.logging.Logging;
 import com.mongodb.MongoException;
+import io.lettuce.core.RedisException;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -50,7 +52,7 @@ public class LoaderUtils {
             Logging.error("Failed to initialize file loader in '%s'!".formatted(fileConfig.getPath()), ex);
         }
 
-        // Mysql loader
+        // MySQL loader
         DatasourcesConfig.MysqlConfig mysqlConfig = config.getMysqlConfig();
         if (mysqlConfig.isEnabled()) {
             try {
@@ -67,6 +69,16 @@ public class LoaderUtils {
                 registerLoader("mongodb", new MongoLoader(mongoConfig));
             } catch (MongoException ex) {
                 Logging.error("Failed to establish connection to the MongoDB server!", ex);
+            }
+        }
+
+        // Redis loader
+        DatasourcesConfig.RedisConfig redisConfig = config.getRedisConfig();
+        if (redisConfig.isEnabled()) {
+            try {
+                registerLoader("redis", new RedisLoader(redisConfig));
+            } catch (RedisException ex) {
+                Logging.error("Failed to establish connection to the Redis server!", ex);
             }
         }
     }

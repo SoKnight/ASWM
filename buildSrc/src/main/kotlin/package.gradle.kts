@@ -22,12 +22,14 @@ tasks.shadowJar {
     configurations = listOf(project.configurations["packaged"])
     destinationDirectory = rootProject.layout.projectDirectory.dir("build")
 
-    isEnableRelocation = true
-    relocationPrefix = "com.grinderwolf.swm.internal"
-
     exclude("**/*.SF")
     exclude("**/*.DSA")
+    exclude("**/*.kotlin_module")
+    exclude("**/LICENSE*")
+    exclude("**/NOTICE*")
     exclude("META-INF/maven/**")
+    exclude("META-INF/native-image/**")
+    exclude("META-INF/io.netty.versions.properties")
 
     // strip off useless Zstd natives
     val zstdNativesPattern = Pattern.compile("^(?<os>[^/]+)/(?<arch>[^/]+)/libzstd-.+\\.(?:so|dll)\$")

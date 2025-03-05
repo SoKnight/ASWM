@@ -13,6 +13,7 @@ zstdJni = "1.5.7-1"
 hikariCP = "6.2.1"
 mysqlDriver = "8.0.23"      # bundled in Paper 1.16.5
 mongoDriver = "3.12.14"
+lettuceCore = "6.5.4.RELEASE"
 
 # server software
 paper = "1.16.5-R0.1-SNAPSHOT"
@@ -32,6 +33,7 @@ zstdJni = { module = "com.github.luben:zstd-jni", version.ref = "zstdJni" }
 hikariCP = { module = "com.zaxxer:HikariCP", version.ref = "hikariCP" }
 mysqlDriver = { module = "mysql:mysql-connector-java", version.ref = "mysqlDriver" }
 mongoDriver = { module = "org.mongodb:mongo-java-driver", version.ref = "mongoDriver" }
+lettuceCore = { module = "io.lettuce:lettuce-core", version.ref = "lettuceCore" }
 
 # server software
 paper = { module = "com.destroystokyo.paper:paper", version.ref = "paper" }

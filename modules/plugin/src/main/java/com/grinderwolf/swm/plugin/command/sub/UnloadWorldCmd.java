@@ -28,72 +28,73 @@ public class UnloadWorldCmd implements Subcommand {
 
     @Override
     public boolean onCommand(CommandSender sender, String[] args) {
-        if (args.length > 0) {
-            String worldName = args[0];
-            World world = Bukkit.getWorld(args[0]);
-            if (world == null) {
-                sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "World " + worldName + " is not loaded!");
-                return true;
-            }
+        if (args.length == 0)
+            return false;
 
-            String source;
-            if (args.length > 1) {
-                source = args[1];
-            } else {
-                WorldsConfig config = ConfigManager.getWorldConfig();
-                WorldData worldData = config.getWorlds().get(worldName);
-                if (worldData == null) {
-                    sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Unknown world " + worldName + "! Are you sure you've typed it correctly?");
-                    return true;
-                }
+        String worldName = args[0];
 
-                source = worldData.getDataSource();
-            }
-
-            SlimeLoader loader = LoaderUtils.getLoader(source);
-
-            // Teleport all players outside the world before unloading it
-            List<Player> players = world.getPlayers();
-            if (!players.isEmpty()) {
-                World defaultWorld = Bukkit.getWorlds().get(0);
-                Location spawnLocation = defaultWorld.getSpawnLocation();
-                spawnLocation.setY(64);
-
-                while (spawnLocation.getBlock().getType() != Material.AIR || spawnLocation.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR) {
-                    if (spawnLocation.getY() >= 256) {
-                        spawnLocation.getWorld().getBlockAt(0, 64 ,0).setType(Material.BEDROCK);
-                    } else {
-                        spawnLocation.add(0, 1, 0);
-                    }
-                }
-
-                for (Player player : players) {
-                    player.teleportAsync(spawnLocation);
-                }
-            }
-
-            if (Bukkit.unloadWorld(world, true)) {
-                Logging.info("Attempting to unload world '%s'...", worldName);
-
-                try {
-                    if (loader.isWorldLocked(worldName)) {
-                        Logging.info("World '%s' is locked.", worldName);
-                        loader.unlockWorld(worldName);
-                        Logging.info("Attempted to unlock world '%s'.", worldName);
-                    }
-                } catch (UnknownWorldException | IOException ex) {
-                    Logging.error("Failed to unload world '%s'!".formatted(worldName), ex);
-                }
-
-                sender.sendMessage(COMMAND_PREFIX + ChatColor.GREEN + "World " + ChatColor.YELLOW + worldName + ChatColor.GREEN + " unloaded correctly.");
-            } else {
-                sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to unload world " + worldName + ".");
-            }
-
+        World world = Bukkit.getWorld(args[0]);
+        if (world == null) {
+            sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "World " + worldName + " is not loaded!");
             return true;
         }
 
-        return false;
+        String source = null;
+        if (args.length > 1) {
+            source = args[1];
+        } else {
+            WorldsConfig config = ConfigManager.getWorldConfig();
+            WorldData worldData = config.getWorlds().get(worldName);
+            if (worldData != null && !worldData.isReadOnly()) {
+                source = worldData.getDataSource();
+            }
+        }
+
+        SlimeLoader loader = source == null ? null : LoaderUtils.getLoader(source);
+
+        // Teleport all players outside the world before unloading it
+        List<Player> players = world.getPlayers();
+        if (!players.isEmpty()) {
+            Location spawnLocation = findValidDefaultSpawn();
+            players.forEach(player -> player.teleportAsync(spawnLocation));
+        }
+
+        if (!Bukkit.unloadWorld(world, true)) {
+            sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Failed to unload world " + worldName + ".");
+            return true;
+        }
+
+        Logging.info("Attempting to unload world '%s'...", worldName);
+        try {
+            if (loader != null && loader.isWorldLocked(worldName)) {
+                Logging.info("World '%s' is locked.", worldName);
+                loader.unlockWorld(worldName);
+                Logging.info("Attempted to unlock world '%s'.", worldName);
+            } else {
+                Logging.info("World '%s' was not unlocked. This could be because the world is either unlocked or not in the config. This is not an error.", worldName);
+            }
+        } catch (UnknownWorldException | IOException ex) {
+            Logging.error("Failed to unload world '%s'.".formatted(worldName), ex);
+        }
+
+        sender.sendMessage(COMMAND_PREFIX + ChatColor.GREEN + "World " + ChatColor.YELLOW + worldName + ChatColor.GREEN + " unloaded correctly.");
+        return true;
+    }
+
+    private Location findValidDefaultSpawn() {
+        World defaultWorld = Bukkit.getWorlds().get(0);
+        Location spawnLocation = defaultWorld.getSpawnLocation();
+        spawnLocation.setY(64);
+
+        while (spawnLocation.getBlock().getType() != Material.AIR || spawnLocation.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR) {
+            if (spawnLocation.getY() >= 256) {
+                spawnLocation.getWorld().getBlockAt(0, 64 ,0).setType(Material.BEDROCK);
+            } else {
+                spawnLocation.add(0, 1, 0);
+            }
+        }
+
+        return spawnLocation;
     }
 
     @Override

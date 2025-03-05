@@ -76,8 +76,7 @@ public class CustomWorldServer extends WorldServer {
     @Override
     public void save(IProgressUpdate progressUpdate, boolean forceSave, boolean flag1) {
         if (!slimeWorld.isReadOnly() && !flag1) {
-            if (forceSave) // TODO Is this really 'forceSave'? Doesn't look like it tbh
-                Bukkit.getPluginManager().callEvent(new WorldSaveEvent(getWorld()));
+            Bukkit.getPluginManager().callEvent(new WorldSaveEvent(getWorld()));
 
             this.getChunkProvider().save(forceSave);
             this.worldDataServer.a(this.getWorldBorder().t());
@@ -268,7 +267,11 @@ public class CustomWorldServer extends WorldServer {
             }
         }
 
-        HeightMap.a(nmsChunk, unsetHeightMaps);
+        // Don't try to populate heightmaps if there are none.
+        // Does a crazy amount of block lookups
+        if (!unsetHeightMaps.isEmpty())
+            HeightMap.a(nmsChunk, unsetHeightMaps);
+
         return nmsChunk;
     }
 

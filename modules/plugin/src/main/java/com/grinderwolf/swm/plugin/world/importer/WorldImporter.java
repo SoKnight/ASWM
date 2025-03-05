@@ -50,6 +50,8 @@ public class WorldImporter {
             worldVersion = 0x04; // 1.13 world
         } else if (data.version() < 2566) {
             worldVersion = 0x05; // 1.14 world
+        } else if (data.version() < 2724) {
+            worldVersion = 0x06; // 1.16 world
         } else {
             worldVersion = 0x07;
         }

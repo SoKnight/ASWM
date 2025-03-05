@@ -7,6 +7,8 @@ import com.grinderwolf.swm.api.world.properties.SlimePropertyMap;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Main class of the SWM API. From here, you can load
@@ -15,6 +17,22 @@ import java.nio.file.Path;
  * interface, to load and store worlds from other data sources.
  */
 public interface SlimePlugin {
+
+    /**
+     * Gets a world which has already been loaded by ASWM.
+     *
+     * @param worldName the name of the world to get
+     * @return the loaded world, or {@code null} if no loaded world matches the given name
+     */
+    SlimeWorld getWorld(String worldName);
+
+    /**
+     * Gets a list of worlds which have been loaded by ASWM.
+     *
+     * @apiNote the returned list is immutable, and encompasses a view of the loaded worlds at the time of the method call.
+     * @return a list of worlds
+     */
+    List<SlimeWorld> getLoadedWorlds();
 
     /**
      * Loads a world using a specificied {@link SlimeLoader}.
@@ -41,6 +59,8 @@ public interface SlimePlugin {
             SlimePropertyMap propertyMap
     ) throws UnknownWorldException, IOException, CorruptedWorldException, NewerFormatException, WorldInUseException;
 
+    CompletableFuture<SlimeWorld> loadWorldAsync(SlimeLoader loader, String worldName, boolean readOnly, SlimePropertyMap propertyMap);
+
     /**
      * Creates an empty world and stores it using a specified
      * {@link SlimeLoader}. This world can then be added to
@@ -62,6 +82,8 @@ public interface SlimePlugin {
             boolean readOnly,
             SlimePropertyMap propertyMap
     ) throws WorldAlreadyExistsException, IOException;
+
+    CompletableFuture<SlimeWorld> createEmptyWorldAsync(SlimeLoader loader, String worldName, boolean readOnly, SlimePropertyMap propertyMap);
 
     /**
      * Generates a Minecraft World from a {@link SlimeWorld} and
@@ -89,24 +111,7 @@ public interface SlimePlugin {
             SlimeLoader newLoader
     ) throws IOException, WorldInUseException, WorldAlreadyExistsException, UnknownWorldException;
 
-    /**
-     * Returns the {@link SlimeLoader} that is able to
-     * read and store worlds from a specified data source.
-     *
-     * @param dataSource {@link String} containing the data source.
-     *
-     * @return The {@link SlimeLoader} capable of reading and writing to the data source.
-     */
-    SlimeLoader getLoader(String dataSource);
-
-    /**
-     * Registers a custom {@link SlimeLoader}. This loader can
-     * then be used by Slime World Manager to load and store worlds.
-     *
-     * @param dataSource The data source this loader is capable of reading and writing to.
-     * @param loader The {@link SlimeLoader} that is going to be registered.
-     */
-    void registerLoader(String dataSource, SlimeLoader loader);
+    CompletableFuture<?> migrateWorldAsync(String worldName, SlimeLoader currentLoader, SlimeLoader newLoader);
 
     /**
      * Imports a world into the SRF and saves it in a data source.
@@ -126,5 +131,26 @@ public interface SlimePlugin {
             String worldName,
             SlimeLoader loader
     ) throws WorldAlreadyExistsException, InvalidWorldException, WorldLoadedException, WorldTooBigException, IOException;
+
+    CompletableFuture<?> importWorldAsync(Path worldDir, String worldName, SlimeLoader loader);
+
+    /**
+     * Returns the {@link SlimeLoader} that is able to
+     * read and store worlds from a specified data source.
+     *
+     * @param dataSource {@link String} containing the data source.
+     *
+     * @return The {@link SlimeLoader} capable of reading and writing to the data source.
+     */
+    SlimeLoader getLoader(String dataSource);
+
+    /**
+     * Registers a custom {@link SlimeLoader}. This loader can
+     * then be used by Slime World Manager to load and store worlds.
+     *
+     * @param dataSource The data source this loader is capable of reading and writing to.
+     * @param loader The {@link SlimeLoader} that is going to be registered.
+     */
+    void registerLoader(String dataSource, SlimeLoader loader);
 
 }

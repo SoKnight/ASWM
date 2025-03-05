@@ -1,4 +1,4 @@
-package com.grinderwolf.swm.plugin.converter.spec;
+package com.grinderwolf.swm.plugin.world.upgrader.spec;
 
 import com.flowpowered.nbt.ByteTag;
 import com.flowpowered.nbt.CompoundMap;
@@ -8,7 +8,7 @@ import com.flowpowered.nbt.StringTag;
 import com.grinderwolf.swm.api.world.SlimeChunk;
 import com.grinderwolf.swm.api.world.SlimeChunkSection;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
-import com.grinderwolf.swm.plugin.converter.WorldConverter;
+import com.grinderwolf.swm.plugin.world.upgrader.WorldUpgrader;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -19,14 +19,13 @@ import java.util.Map;
 import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class VillageAndPillageWorldConverter implements WorldConverter {
+public class VillageAndPillageWorldUpgrader implements WorldUpgrader {
 
-    public static final WorldConverter INSTANCE = new VillageAndPillageWorldConverter();
+    public static final WorldUpgrader INSTANCE = new VillageAndPillageWorldUpgrader();
 
     private static final int[] VILLAGER_XP = { 0, 10, 50, 100, 150 };
 
     private static final Map<String, String> oldToNewMap = new HashMap<>();
-    private static final Map<String, String> newToOldMap = new HashMap<>();
 
     static {
         rename("minecraft:tube_coral_fan", "minecraft:tube_coral_wall_fan");
@@ -41,7 +40,6 @@ public class VillageAndPillageWorldConverter implements WorldConverter {
 
     private static void rename(String oldName, String newName) {
         oldToNewMap.put(oldName, newName);
-        newToOldMap.put(newName, oldName);
     }
 
     @Override
@@ -157,85 +155,6 @@ public class VillageAndPillageWorldConverter implements WorldConverter {
             case 4 -> (career == 2 ? "minecraft:leatherworker" : "minecraft:butcher");
             case 5 -> "minecraft:nitwit";
             default -> "minecraft:none";
-        };
-    }
-
-    @Override
-    public void downgrade(CraftSlimeWorld world) {
-        for (SlimeChunk chunk : new ArrayList<>(world.getChunks().values())) {
-            // Update renamed blocks
-            for (int sectionIndex = 0; sectionIndex < chunk.getSections().length; sectionIndex++) {
-                SlimeChunkSection section = chunk.getSections()[sectionIndex];
-                if (section != null) {
-                    List<CompoundTag> palette = section.palette().getValue();
-                    for (int paletteIndex = 0; paletteIndex < palette.size(); paletteIndex++) {
-                        CompoundTag blockTag = palette.get(paletteIndex);
-                        String name = blockTag.getStringValue("Name").orElseThrow();
-
-                        // The trapped chest tile entity type didn't exist until 1.13
-                        if (name.equals("minecraft:trapped_chest"))
-                            updateBlockEntities(chunk, sectionIndex, paletteIndex, "minecraft:trapped_chest", "minecraft:chest");
-
-                        String newName = newToOldMap.get(name);
-                        if (newName != null) {
-                            blockTag.getValue().put("Name", new StringTag("Name", newName));
-                        }
-                    }
-                }
-            }
-
-            if (chunk.getEntities() != null) {
-                for (CompoundTag entityTag : chunk.getEntities()) {
-                    switch (entityTag.getStringValue("id").orElseThrow()) {
-                        case "minecraft:cat":
-                            // Cats are ocelots
-                            entityTag.getValue().put("id", new StringTag("id", "minecraft:ocelot"));
-                            break;
-                        case "minecraft:villager":
-                        case "minecraft:zombie_villager":
-                            // Villager data has changed
-                            CompoundTag dataTag = entityTag.getAsCompoundTag("VillagerData").orElseThrow();
-                            String profession = dataTag.getStringValue("profession").orElseThrow();
-                            int[] professionData = getVillagerProfession(profession);
-
-                            entityTag.getValue().remove("VillagerData");
-                            entityTag.getValue().put("Profession", new IntTag("Profession", professionData[0]));
-                            entityTag.getValue().put("Career", new IntTag("Career", professionData[1]));
-                            entityTag.getValue().put("CareerLevel", new IntTag("Career", 1));
-                            break;
-                        case "minecraft:banner":
-                            // The illager banners changed the translation message
-                            entityTag.getStringValue("CustomName").ifPresent(name -> {
-                                String newName = name.replace(
-                                        "\"translate\":\"block.minecraft.ominous_banner\"",
-                                        "\"translate\":\"block.minecraft.illager_banner\""
-                                );
-
-                                entityTag.getValue().put("CustomName", new StringTag("CustomName", newName));
-                            });
-                            break;
-                    }
-                }
-            }
-        }
-    }
-
-    private int[] getVillagerProfession(String profession) {
-        return switch (profession) {
-            case "minecraft:farmer" -> new int[] {0, 1};
-            case "minecraft:fisherman" -> new int[] {0, 2};
-            case "minecraft:shepherd" -> new int[] {0, 3};
-            case "minecraft:fletcher" -> new int[] {0, 4};
-            case "minecraft:librarian" -> new int[] {1, 1};
-            case "minecraft:cartographer" -> new int[] {1, 2};
-            case "minecraft:cleric" -> new int[] {2, 1};
-            case "minecraft:armorer" -> new int[] {3, 1};
-            case "minecraft:weaponsmith" -> new int[] {3, 2};
-            case "minecraft:toolsmith" -> new int[] {3, 3};
-            case "minecraft:butcher" -> new int[] {4, 1};
-            case "minecraft:leatherworker" -> new int[] {4, 2};
-            case "minecraft:nitwit" -> new int[] {5, 1};
-            default -> new int[] {0, 0};
         };
     }
 

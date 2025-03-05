@@ -141,29 +141,25 @@ public class FileLoader implements SlimeLoader {
 
     @Override
     public void deleteWorld(String worldName) throws UnknownWorldException {
-        if (!worldExists(worldName)) {
+        if (!worldExists(worldName))
             throw new UnknownWorldException(worldName);
-        } else {
-            try {
-                RandomAccessFile worldFile = worldFiles.get(worldName);
-                Logging.info("Deleting world '%s'...", worldName);
-                RandomAccessFile randomAccessFile = worldFiles.get(worldName);
-                unlockWorld(worldName);
-                FileUtils.forceDelete(worldDir.resolve(worldName + ".slime").toFile());
 
-                if (randomAccessFile != null) {
-                    Logging.info("Attempting to delete worldData '%s'...", worldName);
-                    worldFile.seek(0); // Make sure we're at the start of the file
-                    worldFile.setLength(0); // Delete old data
-                    worldFile.write(null);
-                    randomAccessFile.close();
-                    worldFiles.remove(worldName);
-                }
+        try (RandomAccessFile randomAccessFile = worldFiles.get(worldName)) {
+            Logging.info("Deleting world '%s'...", worldName);
+            unlockWorld(worldName);
+            FileUtils.forceDelete(worldDir.resolve(worldName + ".slime").toFile());
 
-                Logging.info("World '%s' deleted.", worldName);
-            } catch (IOException ex) {
-                Logging.error("Failed to delete world '%s'!".formatted(worldName), ex);
+            if (randomAccessFile != null) {
+                Logging.info("Attempting to delete worldData '%s'...", worldName);
+                randomAccessFile.seek(0);       // Make sure we're at the start of the file
+                randomAccessFile.setLength(0);  // Delete old data
+                randomAccessFile.write(null);
+                worldFiles.remove(worldName);
             }
+
+            Logging.info("World '%s' deleted.", worldName);
+        } catch (IOException ex) {
+            Logging.error("Failed to delete world '%s'!".formatted(worldName), ex);
         }
     }
 

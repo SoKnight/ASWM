@@ -1,13 +1,8 @@
 # Inside this file is the configuration options
 # for the data sources that SWM supports
-mysql:
-  enabled: false
-  host: 127.0.0.1
-  port: 3306
-  username: slimeworldmanager
-  password: ''
-  database: slimeworldmanager
-  usessl: false
+file:
+  path: slime_worlds
+
 mongodb:
   enabled: false
   host: 127.0.0.1
@@ -18,5 +13,16 @@ mongodb:
   database: slimeworldmanager
   collection: worlds
   uri: ''
-file:
-  path: slime_worlds
+
+mysql:
+  enabled: false
+  host: 127.0.0.1
+  port: 3306
+  username: slimeworldmanager
+  password: ''
+  database: slimeworldmanager
+  usessl: false
+
+redis:
+  enabled: false
+  uri: ''

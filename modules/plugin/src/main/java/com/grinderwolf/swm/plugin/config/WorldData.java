@@ -17,7 +17,7 @@ public class WorldData {
     private String dataSource = "file";
 
     @Setting("spawn")
-    private String spawn = "0, 255, 0";
+    private String spawn = "0.5, 255, 0.5";
 
     @Setting("difficulty")
     private String difficulty = "peaceful";

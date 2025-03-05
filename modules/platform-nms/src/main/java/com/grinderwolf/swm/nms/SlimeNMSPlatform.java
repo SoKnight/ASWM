@@ -18,6 +18,7 @@ import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R3.util.CraftMagicNumbers;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,6 +62,7 @@ public class SlimeNMSPlatform implements SlimeNMS {
     }
 
     private final byte worldVersion = 0x06;
+    private final Plugin plugin;
 
     private boolean loadingDefaultWorlds = true; // If true, the addWorld method will not be skipped
 
@@ -68,7 +70,9 @@ public class SlimeNMSPlatform implements SlimeNMS {
     private CustomWorldServer defaultNetherWorld;
     private CustomWorldServer defaultEndWorld;
 
-    public SlimeNMSPlatform() {
+    public SlimeNMSPlatform(Plugin plugin) {
+        this.plugin = plugin;
+
         try {
             CraftCLSMBridge.initialize(this);
         } catch (NoClassDefFoundError ex) {
@@ -213,22 +217,13 @@ public class SlimeNMSPlatform implements SlimeNMS {
                     Lifecycle.stable()
             );
         } else {
-            WorldSettings worldSettings = new WorldSettings(
-                    worldName,
-                    serverProps.gamemode,
-                    false,
-                    serverProps.difficulty,
-                    false,
-                    new GameRules(),
-                    mcServer.datapackconfiguration
-            );
-
             // Game rules
             Optional<CompoundTag> gameRules = extraData.getAsCompoundTag("gamerules");
+            GameRules rules = new GameRules();
+
             gameRules.ifPresent(compoundTag -> {
                 NBTTagCompound compound = (NBTTagCompound) Converter.convertTag(compoundTag);
                 Map<String, GameRuleKey<?>> gameRuleKeys = CraftWorld.getGameRulesNMS();
-                GameRules rules = worldSettings.getGameRules();
 
                 compound.getKeys().forEach(gameRule -> {
                     if(gameRuleKeys.containsKey(gameRule)) {
@@ -239,6 +234,16 @@ public class SlimeNMSPlatform implements SlimeNMS {
                     }
                 });
             });
+
+            WorldSettings worldSettings = new WorldSettings(
+                    worldName,
+                    serverProps.gamemode,
+                    false,
+                    serverProps.difficulty,
+                    false,
+                    rules,
+                    mcServer.datapackconfiguration
+            );
 
             worldDataServer = new WorldDataServer(worldSettings, serverProps.generatorSettings, Lifecycle.stable());
         }

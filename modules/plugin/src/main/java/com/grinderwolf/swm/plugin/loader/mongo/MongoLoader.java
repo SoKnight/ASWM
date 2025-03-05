@@ -181,12 +181,11 @@ public class MongoLoader extends UpdatableLoader {
         try {
             MongoDatabase mongoDatabase = client.getDatabase(database);
             GridFSBucket bucket = GridFSBuckets.create(mongoDatabase, collection);
+            bucket.uploadFromStream(worldName, new ByteArrayInputStream(serializedWorld));
 
             GridFSFile oldFile = bucket.find(Filters.eq("filename", worldName)).first();
             if (oldFile != null)
-                bucket.rename(oldFile.getObjectId(), worldName + "_backup");
-
-            bucket.uploadFromStream(worldName, new ByteArrayInputStream(serializedWorld));
+                bucket.delete(oldFile.getObjectId());
 
             MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
 
@@ -257,9 +256,8 @@ public class MongoLoader extends UpdatableLoader {
             bucket.delete(file.getObjectId());
 
             // Delete backup file
-            file = bucket.find(Filters.eq("filename", worldName + "_backup")).first();
-            if (file != null)
-                bucket.delete(file.getObjectId());
+            for (GridFSFile backupFile : bucket.find(Filters.eq("filename", worldName + "_backup")))
+                bucket.delete(backupFile.getObjectId());
 
             MongoCollection<Document> mongoCollection = mongoDatabase.getCollection(collection);
             mongoCollection.deleteOne(Filters.eq("name", worldName));

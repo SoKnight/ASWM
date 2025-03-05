@@ -44,14 +44,14 @@ public class CreateWorldCmd implements Subcommand {
 
             WorldsConfig config = ConfigManager.getWorldConfig();
             if (config.getWorlds().containsKey(worldName)) {
-                sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "There is already a world called  " + worldName + " inside the worlds config file.");
+                sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "There is already a world called " + worldName + " inside the worlds config file.");
                 return true;
             }
 
             String dataSource = args[1];
             SlimeLoader loader = SWMPlugin.getInstance().getLoader(dataSource);
             if (loader == null) {
-                sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Unknown data source  " + dataSource + ".");
+                sender.sendMessage(COMMAND_PREFIX + ChatColor.RED + "Unknown data source " + dataSource + ".");
                 return true;
             }
 

@@ -1,4 +1,4 @@
-package com.grinderwolf.swm.plugin.converter.spec;
+package com.grinderwolf.swm.plugin.world.upgrader.spec;
 
 import com.flowpowered.nbt.CompoundTag;
 import com.flowpowered.nbt.LongArrayTag;
@@ -8,7 +8,7 @@ import com.grinderwolf.swm.api.world.SlimeChunkSection;
 import com.grinderwolf.swm.nms.CraftSlimeChunk;
 import com.grinderwolf.swm.nms.CraftSlimeChunkSection;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
-import com.grinderwolf.swm.plugin.converter.WorldConverter;
+import com.grinderwolf.swm.plugin.world.upgrader.WorldUpgrader;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class NetherUpdateWorldConverter implements WorldConverter {
+public class NetherUpdateWorldUpgrader implements WorldUpgrader {
 
-    public static final WorldConverter INSTANCE = new NetherUpdateWorldConverter();
+    public static final WorldUpgrader INSTANCE = new NetherUpdateWorldUpgrader();
 
     private static final int[] MULTIPLY_DE_BRUIJN_BIT_POSITION = new int[] {
             0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6,11, 5, 10, 9
@@ -66,23 +66,6 @@ public class NetherUpdateWorldConverter implements WorldConverter {
                     chunk.getEntities(),
                     ((CraftSlimeChunk) chunk).getUpgradeData())
             );
-        }
-    }
-
-    @Override
-    public void downgrade(CraftSlimeWorld world) {
-        for (SlimeChunk chunk : world.getChunks().values()) {
-            // Remove padding from height maps and block states
-            // TODO
-            for (int sectionIndex = 0; sectionIndex < chunk.getSections().length; sectionIndex++) {
-                SlimeChunkSection section = chunk.getSections()[sectionIndex];
-
-                if (section != null) {
-                }
-            }
-
-            // Remove extra data from biomes
-            // TODO
         }
     }
 

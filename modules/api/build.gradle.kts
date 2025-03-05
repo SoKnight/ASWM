@@ -3,5 +3,7 @@ plugins {
 }
 
 dependencies {
+    compileOnlyApi(libs.paperApi)
+
     api(libs.flowNbt)
 }

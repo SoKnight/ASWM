@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.grinderwolf"
-version = "2.6.2+starmc.2"
+version = "2.6.2+starmc.3"
 
 subprojects {
     if (project.path.startsWith(":modules:")) {
