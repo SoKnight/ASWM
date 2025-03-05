@@ -64,7 +64,7 @@ public class CreateWorldCmd implements Subcommand {
                     long start = System.currentTimeMillis();
 
                     WorldData worldData = new WorldData();
-                    worldData.setSpawn("0, 64, 0");
+                    worldData.setSpawn("0.5, 64, 0.5");
                     worldData.setDataSource(dataSource);
 
                     SlimePropertyMap propertyMap = worldData.toPropertyMap();
